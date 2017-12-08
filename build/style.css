@@ -1,1 +1,13 @@
 html, body, div {padding: 0; margin: 0;}
+
+.template {
+  height: 100%;
+  width: 100%;
+}
+.dragHandle {
+  width: 20px;
+  height: 20px;
+  background: blue;
+}
+
+label {user-select: none;}

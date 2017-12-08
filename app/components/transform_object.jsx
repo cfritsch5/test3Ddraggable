@@ -1,5 +1,7 @@
 import React from 'react';
-import Controls from './controls';
+import Controls from './controlcenter';
+import RotateControl from './rotate';
+import TranslateControl from './translate';
 
 class TransformObject extends React.Component {
   constructor(props){
@@ -11,62 +13,96 @@ class TransformObject extends React.Component {
       deltaX: 0,
       deltaY: 0,
       deltaZ: 0,
+      list: [],
     };
     this.update = this.update.bind(this);
     this.transforms = this.transforms.bind(this);
   }
 
+  componentWillMount(){
+    this.setState({
+      list: [
+        {name: 'rX',
+          content:<RotateControl update={this.update} value={this.state.thetaX} name='thetaX' />
+      },
+        {name: 'rY',
+          content:<RotateControl update={this.update} value={this.state.thetaY} name='thetaY' />
+      },
+        {name: 'rZ',
+          content:<RotateControl update={this.update} value={this.state.thetaZ} name='thetaZ' />
+      },
+        {name: 'tX',
+          content:<TranslateControl update={this.update} value={this.state.deltaX} name='deltaX' />
+      },
+        {name: 'tY',
+          content:<TranslateControl update={this.update} value={this.state.deltaY} name='deltaY' />
+      },
+        {name: 'tZ',
+          content:<TranslateControl update={this.update} value={this.state.deltaZ} name='deltaZ' />
+      },
+      ]
+    });
+  }
+
   update(e){
-    this.setState({[e.currentTarget.name]: e.currentTarget.value});
+    console.log(e);
+    let obj = e.currentTarget;
+    let name = obj ? obj.name : e.name;
+    let value = obj ? obj.value : e.value;
+    this.setState({[name]: value});
   }
 
-  tranforms(){
-    const rX = () => {
-      return `rotateX(${this.state.thetaX}deg)`;
-    };
-    const rY = () => {
-      return `rotateY(${this.state.thetaY}deg)`;
-    };
-    const rZ = () => {
-      return `rotateZ(${this.state.thetaZ}deg)`;
-    };
-    const tX = () => {
-      return `translateX(${this.state.deltaX}px)`;
-    };
-    const tY = () => {
-      return `translateY(${this.state.deltaY}px)`;
-    };
-    const tZ = () => {
-      return `translateZ(${this.state.deltaZ}px)`;
+  transforms(){
+    let transform = {
+      rX: `rotateX(${this.state.thetaX}deg)`,
+      rY: `rotateY(${this.state.thetaY}deg)`,
+      rZ: `rotateZ(${this.state.thetaZ}deg)`,
+      tX: `translateX(${this.state.deltaX}px)`,
+      tY: `translateY(${this.state.deltaY}px)`,
+      tZ: `translateZ(${this.state.deltaZ}px)`,
     };
 
-    let transforms = [rX,rY,rZ,tX,tY,tZ];
-    // return transforms;
-    return '';
+    let transforms = '';
+    this.state.list.forEach((listItem)=>{
+      transforms = transforms + ' ' + transform[listItem.name];
+    });
+    return transforms;
+    // return '';
   }
 
-  onSort(){}
 
   render(){
-    // let {thetaX , thetaY , thetaZ} = this.state;
-    // let {deltaX , deltaY , deltaZ} = this.state;
-    let transforms = this.state.transforms;
+    // console.log('render obj');
+    // console.log(this.modChild.bind(this)());
+    let transforms = this.transforms() || '';
     let objectID = 'objectID'; /*temp objectID placeholder*/
+    let className = this.props.children.props.className;
+    className = className + ' ' + objectID;
+    //       <style>{`
+    //           .control-wrapper { display: none; }
+    //           .app {width: 100vw; height: 100vh;}
+    //           .app:focus-within .control-wrapper { display: block; }
+    //           `}</style>
     return (
-      <div className='transform-object'>
+      <div className={`${objectID}-transform-object`}>
         <style>
           {`
-            .controls-wrapper { display: none; }
-            .${objectID} { transform: ${transforms}; }
-            .${objectID}:focus-within  .controls-wrapper { display: block; }
+            .control-wrapper { display: none; }
+            .${objectID}-transform-object:focus-within  .control-wrapper { display: block; }
+            .${objectID}-wrapper > div { transform-style: preserve-3d;}
+            .${objectID} { transform: ${transforms}; transform-style: preserve-3d}
+            .${objectID} {display: flex; justify-content: center; align-items: center;}
           `}
           </style>
-          <div className={`${objectID } object`} tabIndex='0'>
-            <p>{transforms}</p>
-            {React.Children.only(this.props.children)}
+          <p>{transforms}</p>
+          <div className={`${objectID }-wrapper`} tabIndex='0'>
+            {React.cloneElement(this.props.children, {
+               className: className,
+             })}
             <Controls update={this.update} {...this.state}/>
           </div>
       </div>
     );
   }
 }
+export default TransformObject;
